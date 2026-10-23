@@ -1,0 +1,68 @@
+{
+  "version": "3.0",
+  "project": "stablecoin-payment-dashboard",
+  "suite": "Transactions",
+  "description": "Verifies the Transactions page: list, search, and filter functionality",
+  "tests": [
+    {
+      "id": "transactions-page-loads",
+      "name": "Transactions page renders list",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-transactions']" },
+        { "action": "waitForSelector", "selector": "[data-testid='transactions-page']" },
+        { "action": "assertVisible", "selector": "[data-testid='tx-list']" },
+        { "action": "assertVisible", "selector": "[data-testid='tx-item']" }
+      ]
+    },
+    {
+      "id": "transactions-status-badges",
+      "name": "Status badges are rendered on transaction items",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-transactions']" },
+        { "action": "waitForSelector", "selector": "[data-testid='tx-list']" },
+        { "action": "assertVisible", "selector": "[data-testid^='status-badge-']" }
+      ]
+    },
+    {
+      "id": "transactions-search",
+      "name": "Search filters the transaction list",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-transactions']" },
+        { "action": "type", "selector": "[data-testid='tx-search']", "text": "Coffee" },
+        { "action": "assertTextContains", "selector": "[data-testid='tx-list']", "text": "Coffee" }
+      ]
+    },
+    {
+      "id": "transactions-filter-completed",
+      "name": "Completed filter shows only completed transactions",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-transactions']" },
+        { "action": "click", "selector": "[data-testid='filter-status-completed']" },
+        { "action": "assertNotVisible", "selector": "[data-testid='status-badge-failed']" }
+      ]
+    },
+    {
+      "id": "transactions-filter-sent",
+      "name": "Sent filter shows only outgoing transactions",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-transactions']" },
+        { "action": "click", "selector": "[data-testid='filter-dir-sent']" },
+        { "action": "assertVisible", "selector": "[data-testid='tx-list']" }
+      ]
+    },
+    {
+      "id": "transactions-explorer-link",
+      "name": "Explorer links are present on transaction items",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-transactions']" },
+        { "action": "assertVisible", "selector": "[data-testid^='tx-explorer-']" }
+      ]
+    }
+  ]
+}

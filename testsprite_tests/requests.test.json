@@ -1,0 +1,66 @@
+{
+  "version": "3.0",
+  "project": "stablecoin-payment-dashboard",
+  "suite": "Payment Requests",
+  "description": "Verifies the Payment Requests page: list rendering, form validation, and create flow",
+  "tests": [
+    {
+      "id": "requests-page-loads",
+      "name": "Requests page renders with list",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-requests']" },
+        { "action": "waitForSelector", "selector": "[data-testid='requests-page']" },
+        { "action": "assertVisible", "selector": "[data-testid='requests-list']" }
+      ]
+    },
+    {
+      "id": "requests-open-sheet",
+      "name": "New Request button opens the create sheet",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-requests']" },
+        { "action": "click", "selector": "[data-testid='new-request-btn']" },
+        { "action": "assertVisible", "selector": "[data-testid='field-title']" },
+        { "action": "assertVisible", "selector": "[data-testid='field-amount']" },
+        { "action": "assertVisible", "selector": "[data-testid='submit-request']" }
+      ]
+    },
+    {
+      "id": "requests-validation",
+      "name": "Empty form submission shows validation errors",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-requests']" },
+        { "action": "click", "selector": "[data-testid='new-request-btn']" },
+        { "action": "click", "selector": "[data-testid='submit-request']" },
+        { "action": "assertVisible", "selector": "[data-testid='field-title']" }
+      ]
+    },
+    {
+      "id": "requests-create-flow",
+      "name": "Filling the form and submitting creates a new request",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-requests']" },
+        { "action": "click", "selector": "[data-testid='new-request-btn']" },
+        { "action": "type", "selector": "[data-testid='field-title']", "text": "Test Invoice" },
+        { "action": "type", "selector": "[data-testid='field-amount']", "text": "100" },
+        { "action": "type", "selector": "[data-testid='field-to']", "text": "Alice" },
+        { "action": "click", "selector": "[data-testid='submit-request']" },
+        { "action": "assertNotVisible", "selector": "[data-testid='field-title']" },
+        { "action": "assertTextContains", "selector": "[data-testid='requests-list']", "text": "Test Invoice" }
+      ]
+    },
+    {
+      "id": "requests-cancel",
+      "name": "Cancelling a pending request updates its status",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-requests']" },
+        { "action": "click", "selector": "[data-testid='cancel-request-req-001']" },
+        { "action": "assertVisible", "selector": "[data-testid='status-badge-cancelled']" }
+      ]
+    }
+  ]
+}

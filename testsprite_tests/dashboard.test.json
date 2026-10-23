@@ -1,0 +1,38 @@
+{
+  "version": "3.0",
+  "project": "stablecoin-payment-dashboard",
+  "suite": "Dashboard",
+  "description": "Verifies the Dashboard page renders stat cards and the recent transaction list",
+  "tests": [
+    {
+      "id": "dashboard-loads",
+      "name": "Dashboard page renders on load",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "waitForSelector", "selector": "[data-testid='dashboard-page']" },
+        { "action": "assertVisible", "selector": "[data-testid='stat-card']" },
+        { "action": "assertCount", "selector": "[data-testid='stat-card']", "count": 4 }
+      ]
+    },
+    {
+      "id": "dashboard-recent-txs",
+      "name": "Recent transactions list is populated",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "waitForSelector", "selector": "[data-testid='recent-tx-list']" },
+        { "action": "assertVisible", "selector": "[data-testid='tx-row']" }
+      ]
+    },
+    {
+      "id": "dashboard-nav",
+      "name": "Desktop navigation links are present",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "assertVisible", "selector": "[data-testid='nav-dashboard']" },
+        { "action": "assertVisible", "selector": "[data-testid='nav-requests']" },
+        { "action": "assertVisible", "selector": "[data-testid='nav-transactions']" },
+        { "action": "assertVisible", "selector": "[data-testid='nav-analytics']" }
+      ]
+    }
+  ]
+}

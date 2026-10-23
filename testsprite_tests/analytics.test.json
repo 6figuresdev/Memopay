@@ -1,0 +1,45 @@
+{
+  "version": "3.0",
+  "project": "stablecoin-payment-dashboard",
+  "suite": "Analytics",
+  "description": "Verifies the Analytics page: KPI cards, bar chart, and outcome breakdown",
+  "tests": [
+    {
+      "id": "analytics-page-loads",
+      "name": "Analytics page renders KPI cards",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-analytics']" },
+        { "action": "waitForSelector", "selector": "[data-testid='analytics-page']" },
+        { "action": "assertVisible", "selector": "[data-testid='bar-chart']" }
+      ]
+    },
+    {
+      "id": "analytics-bar-chart",
+      "name": "7-day bar chart is rendered",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-analytics']" },
+        { "action": "assertVisible", "selector": "[data-testid='bar-chart']" }
+      ]
+    },
+    {
+      "id": "analytics-donut-chart",
+      "name": "Donut chart is rendered",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-analytics']" },
+        { "action": "assertVisible", "selector": "[data-testid='donut-chart']" }
+      ]
+    },
+    {
+      "id": "analytics-request-outcomes",
+      "name": "Request outcome bars are rendered",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "click", "selector": "[data-testid='nav-analytics']" },
+        { "action": "assertVisible", "selector": "[data-testid='req-outcomes']" }
+      ]
+    }
+  ]
+}

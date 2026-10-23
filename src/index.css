@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Background */
+  --bg: #f8f9fb;
+
+  /* Surfaces — opaque, no blur */
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #f3f4f7;
+
+  /* Text */
+  --ink: #111827;
+  --ink-2: #374151;
+  --muted: #6b7280;
+  --subtle: #9ca3af;
+
+  /* Borders */
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  /* Brand — indigo */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-bg: #eef2ff;
+  --accent-text: #4338ca;
+
+  /* Teal — Receive */
+  --teal: #0d9488;
+  --teal-hover: #0f766e;
+  --teal-bg: #f0fdfa;
+
+  /* Violet — Requests */
+  --violet: #7c3aed;
+  --violet-bg: #f5f3ff;
+
+  /* Success — emerald */
+  --success: #059669;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+
+  /* Danger — rose */
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+
+  /* Amber — Analytics */
+  --amber: #d97706;
+  --amber-bg: #fffbeb;
+
+  /* Focus */
+  --focus: #6366f1;
+
+  /* Shadows — subtle, real depth */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.03);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100dvh;
+}
+
+.display {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', Menlo, monospace;
+  font-size: 0.875em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
