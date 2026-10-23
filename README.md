@@ -5,7 +5,7 @@ tracking transactions, and viewing payment analytics.
 
 ## Live Application
 
-[Open the application]()
+https://memopayvercelapp.vercel.app/
 
 ## Features
 
