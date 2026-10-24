@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   LayoutDashboard,
   FileText,
@@ -8,9 +8,11 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   ShieldCheck,
+  LogOut,
+  ChevronDown,
 } from 'lucide-react'
 import { ConnectKitButton } from 'connectkit'
-import { useAccount, useReadContract, useSwitchChain } from 'wagmi'
+import { useAccount, useReadContract, useSwitchChain, useDisconnect } from 'wagmi'
 import { erc20Abi, type Address } from 'viem'
 import { TokenUSDC } from '@web3icons/react'
 import { Amount, usdcDecimalsFor } from '@/onchain-money'
@@ -44,6 +46,79 @@ export const card: React.CSSProperties = {
   boxShadow: 'var(--shadow-sm)',
 }
 
+// User menu — address chip + disconnect dropdown
+function UserMenu({ address, balance }: { address: Address; balance: string | null }) {
+  const { disconnect } = useDisconnect()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    if (open) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const short = `${address.slice(0, 6)}…${address.slice(-4)}`
+  // Deterministic color from address
+  const hue = parseInt(address.slice(2, 4), 16) * 1.4
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium"
+        style={{ background: 'var(--surface-muted)', border: '1px solid var(--border)', color: 'var(--ink)' }}
+      >
+        {/* Avatar */}
+        <span
+          className="flex size-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
+          style={{ background: `hsl(${hue},60%,50%)` }}
+        >
+          {address.slice(2, 4).toUpperCase()}
+        </span>
+        {balance !== null && (
+          <span className="hidden items-center gap-1 md:flex">
+            <TokenUSDC variant="branded" size={12} />
+            <span className="display tabular-nums text-xs font-bold">{balance}</span>
+            <span className="text-xs" style={{ color: 'var(--muted)' }}>USDC</span>
+          </span>
+        )}
+        <span className="hidden text-xs md:block" style={{ color: 'var(--muted)' }}>{short}</span>
+        <ChevronDown className="size-3.5" style={{ color: 'var(--muted)' }} />
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 z-50 mt-1 w-52 rounded-xl p-1"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+        >
+          {/* Address row */}
+          <div className="px-3 py-2">
+            <p className="text-xs font-semibold" style={{ color: 'var(--ink)' }}>Connected wallet</p>
+            <p className="mt-0.5 font-mono text-xs" style={{ color: 'var(--muted)' }}>
+              {address.slice(0, 10)}…{address.slice(-8)}
+            </p>
+          </div>
+          <div style={{ borderTop: '1px solid var(--border)', margin: '2px 0' }} />
+          <button
+            onClick={() => { disconnect(); setOpen(false) }}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
+            style={{ color: 'var(--danger)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--danger-bg)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <LogOut className="size-4" />
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Wrong-chain banner
 function WrongChainBanner({ chainId }: { chainId: number | undefined }) {
   const { switchChain, isPending } = useSwitchChain()
@@ -66,35 +141,48 @@ function WrongChainBanner({ chainId }: { chainId: number | undefined }) {
   )
 }
 
-// Connect landing — clean and direct
+// Connect landing — header with connect button top-right
 function ConnectLanding() {
   const features = [
-    { icon: ArrowUpRight,  label: 'Send USDC',   desc: 'Real on-chain transfers',  color: 'var(--accent)',  bg: 'var(--accent-bg)'  },
-    { icon: ArrowDownLeft, label: 'Receive',      desc: 'Shareable payment links',  color: 'var(--teal)',    bg: 'var(--teal-bg)'    },
+    { icon: ArrowUpRight,  label: 'Send USDC',   desc: 'Real on-chain transfers',   color: 'var(--accent)',  bg: 'var(--accent-bg)'  },
+    { icon: ArrowDownLeft, label: 'Receive',      desc: 'Shareable payment links',   color: 'var(--teal)',    bg: 'var(--teal-bg)'    },
     { icon: FileText,      label: 'Requests',     desc: 'Create invoices instantly', color: 'var(--violet)', bg: 'var(--violet-bg)'  },
-    { icon: ShieldCheck,   label: 'Verified',     desc: 'Every tx on ArcScan',      color: 'var(--success)', bg: 'var(--success-bg)' },
+    { icon: ShieldCheck,   label: 'Verified',     desc: 'Every tx on ArcScan',       color: 'var(--success)', bg: 'var(--success-bg)' },
   ]
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4 py-12" style={{ background: 'var(--bg)' }}>
-      <div className="w-full max-w-sm">
-        {/* Logo block */}
-        <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl"
-            style={{ background: 'var(--accent)', boxShadow: '0 4px 12px rgba(79,70,229,0.30)' }}>
-            <Zap className="size-6 text-white" />
+    <div className="flex min-h-dvh flex-col" style={{ background: 'var(--bg)' }}>
+      {/* Top bar with connect button in top-right */}
+      <header className="flex items-center justify-between px-5 py-3"
+        style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-2">
+          <div className="flex size-7 items-center justify-center rounded-lg"
+            style={{ background: 'var(--accent)' }}>
+            <Zap className="size-4 text-white" />
           </div>
-          <div>
-            <h1 className="display text-3xl font-bold" style={{ color: 'var(--ink)', letterSpacing: '-0.03em' }}>
-              MemoPay
-            </h1>
-            <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-              USDC payments on Arc Testnet
-            </p>
-          </div>
+          <span className="display text-base font-bold" style={{ color: 'var(--ink)' }}>MemoPay</span>
         </div>
+        <ConnectKitButton label="Connect Wallet" />
+      </header>
 
-        {/* Main card */}
-        <div className="rounded-2xl p-6" style={card}>
+      {/* Centered content */}
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm">
+          {/* Hero */}
+          <div className="mb-8 flex flex-col items-center gap-3 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl"
+              style={{ background: 'var(--accent)', boxShadow: '0 4px 12px rgba(79,70,229,0.25)' }}>
+              <Zap className="size-7 text-white" />
+            </div>
+            <div>
+              <h1 className="display text-3xl font-bold" style={{ color: 'var(--ink)', letterSpacing: '-0.03em' }}>
+                MemoPay
+              </h1>
+              <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+                USDC payments on Arc Testnet
+              </p>
+            </div>
+          </div>
+
           {/* Feature grid */}
           <div className="mb-6 grid grid-cols-2 gap-2">
             {features.map((f) => {
@@ -110,12 +198,9 @@ function ConnectLanding() {
             })}
           </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <ConnectKitButton label="Connect Wallet" />
-            <p className="text-xs" style={{ color: 'var(--subtle)' }}>
-              Arc Testnet · USDC · Use "Get test USDC" in the sidebar
-            </p>
-          </div>
+          <p className="text-center text-xs" style={{ color: 'var(--subtle)' }}>
+            Arc Testnet · USDC · Use "Get test USDC" in the sidebar
+          </p>
         </div>
       </div>
     </div>
@@ -190,20 +275,8 @@ export default function App() {
           })}
         </nav>
 
-        {/* Balance + wallet */}
-        <div className="flex items-center gap-2">
-          {formattedBalance !== null && (
-            <div className="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 md:flex"
-              style={{ background: 'var(--surface-muted)', border: '1px solid var(--border)' }}>
-              <TokenUSDC variant="branded" size={13} />
-              <span className="display tabular-nums text-xs font-bold" style={{ color: 'var(--ink)' }}>
-                {formattedBalance}
-              </span>
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>USDC</span>
-            </div>
-          )}
-          <ConnectKitButton />
-        </div>
+        {/* User menu */}
+        <UserMenu address={address!} balance={formattedBalance} />
       </header>
 
       {/* Page */}
