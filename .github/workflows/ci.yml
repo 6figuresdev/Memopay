@@ -39,7 +39,7 @@ jobs:
     name: Deploy Preview
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     outputs:
       preview_url: ${{ steps.deploy.outputs.preview_url }}
     steps:
@@ -59,6 +59,10 @@ jobs:
         run: |
           npm install -g vercel@latest
           PREVIEW_URL=$(vercel deploy --prebuilt --token "$VERCEL_TOKEN" 2>&1 | tail -1)
+          case "$PREVIEW_URL" in
+            https://*) ;;
+            *) echo "Deploy did not return a URL: $PREVIEW_URL"; exit 1 ;;
+          esac
           echo "preview_url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
           echo "Deployed to: $PREVIEW_URL"
 
@@ -67,7 +71,7 @@ jobs:
     name: TestSprite E2E
     runs-on: ubuntu-latest
     needs: deploy-preview
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     env:
       TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
       PROJECT_ID: ${{ secrets.TESTSPRITE_PROJECT_ID }}
@@ -87,19 +91,28 @@ jobs:
       - name: Run TestSprite suite against PR preview
         id: run-tests
         run: |
+          set +e
           testsprite ci run \
             --project "$PROJECT_ID" \
             --target-url "${{ needs.deploy-preview.outputs.preview_url }}" \
-            --wait \
             --output json > testsprite-result.json
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Show raw results (on failure)
+        if: failure()
+        run: cat testsprite-result.json || true
 
       - name: Download failure artifacts (on failure)
         if: failure()
+        continue-on-error: true
         run: |
-          TEST_ID=$(jq -r '.run.testId // empty' testsprite-result.json)
-          if [ -n "$TEST_ID" ]; then
-            testsprite test failure get "$TEST_ID" --out ./.testsprite/failure
+          if [ -f testsprite-result.json ]; then
+            TEST_ID=$(jq -r '.run.testId // empty' testsprite-result.json 2>/dev/null || true)
+            if [ -n "$TEST_ID" ]; then
+              testsprite test failure get "$TEST_ID" --out ./.testsprite/failure
+            fi
           fi
 
       - name: Upload failure bundle
@@ -108,6 +121,7 @@ jobs:
         with:
           name: testsprite-failure-bundle
           path: ./.testsprite/failure
+          if-no-files-found: ignore
 
       - name: Upload test results
         if: always()
@@ -115,3 +129,4 @@ jobs:
         with:
           name: testsprite-results
           path: testsprite-result.json
+          if-no-files-found: ignore
